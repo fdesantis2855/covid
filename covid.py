@@ -2,6 +2,7 @@
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
+import numpy as np
 
 def daily_report(day):
     
@@ -20,11 +21,75 @@ def daily_report(day):
 
 
 def country_deathRate(report,country):
+    try:
+        country_region="Country/Region"
+        province_state="Province/State"
+        test=report[country_region][0]  
+    except:
+        country_region="Country_Region"
+        province_state="Province_State"
+    
     cdf=pd.DataFrame(data=None, columns=report.columns)
+        
+    
     for i in report.index:
-        if report["Country/Region"][i] == country:
+        #if report["Country/Region"][i] == country:
+        if report[country_region][i] == country:
             row=report.iloc[i,:]
             cdf.loc[i,:]=row
+            
+    ##country_deaths=(cdf[['Country/Region','Province/State','Confirmed','Deaths','deathsRate%']])
+    ##country_deaths.sort_values(['Province/State'],ascending=True)
+    country_deaths=(cdf[[country_region, province_state,'Confirmed','Deaths','deathsRate%']])
+    country_deaths.sort_values([province_state],ascending=True)
+    
+    #
+    category="Deaths"
+    print(country," TOTALS")
+    confirmed=country_deaths['Confirmed'].sum(); print("Confirmed :",confirmed)
+    deaths=country_deaths['Deaths'].sum(); print("Death     :",deaths)
+    death_p=(deaths/confirmed)*100; print("Deaths%   :",death_p)
+    #new_row={'Country/Region':'','Province/State':'--SUMMARY--','Confirmed':confirmed,'Deaths':deaths,'deathsRate%':death_p}
+    #country_deaths.append(new_row, ignore_index=True)
+    #
+    country_deaths.category=category
+    sums = country_deaths.select_dtypes(pd.np.number).sum().rename('total')
+    country_deaths.append(sums)
+    return(country_deaths)
+    
+def country_recoveredRate(report,country):
+    try:
+        country_region="Country/Region"
+        province_state="Province/State"
+        test=report[country_region][0]  
+    except:
+        country_region="Country_Region"
+        province_state="Province_State"
+        test=report[country_region][0]
+    
+    crf=pd.DataFrame(data=None, columns=report.columns)
+    
+    for i in report.index:
+        if report[country_region][i] == country:
+            row=report.iloc[i,:]
+            crf.loc[i,:]=row   
+    
+    country_recovered=(crf[[country_region, province_state, 'Confirmed','Recovered','recoveredRate%']])
+    country_recovered.sort_values([province_state],ascending=True)
+    #
+    category="Recovered"
+    print(country," TOTALS")
+    confirmed=country_recovered['Confirmed'].sum(); print("Confirmed :",confirmed)
+    recovered=country_recovered['Recovered'].sum(); print("Recovered :",recovered)
+    recovered_p=(recovered/confirmed)*100; print("Recovered%:",recovered_p)
+    #new_row={'Country/Region':'---','Province/State':'--SUMMARY--','Confirmed':confirmed,'Recovered':recovered,'recoveredRate%':recovered_p}
+    #bottom_row=pd.DataFrame(data=None, columns=country_recovered.columns)
+    #country_recovered.append(bottom_row,ignore_index=True)
+    #
+    country_deaths.category=category
+    sums = country_recovered.select_dtypes(pd.np.number).sum().rename('total')
+    country_recovered.append(sums)
+    return(country_recovered)
             
     country_deaths=(cdf[['Country/Region','Province/State','Confirmed','Deaths','deathsRate%']])
     country_deaths.sort_values(['Province/State'],ascending=True)
@@ -42,35 +107,15 @@ def country_deathRate(report,country):
     country_deaths.append(sums)
     return(country_deaths)
     
-def country_recoveredRate(report,country):
-    crf=pd.DataFrame(data=None, columns=report.columns)
-    for i in report.index:
-        if report["Country/Region"][i] == country:
-            row=report.iloc[i,:]
-            crf.loc[i,:]=row   
-    
-    country_recovered=(crf[['Country/Region','Province/State','Confirmed','Recovered','recoveredRate%']])
-    country_recovered.sort_values(['Province/State'],ascending=True)
-    #
-    category="Recovered"
-    print(country," TOTALS")
-    confirmed=country_recovered['Confirmed'].sum(); print("Confirmed :",confirmed)
-    recovered=country_recovered['Recovered'].sum(); print("Recovered :",recovered)
-    recovered_p=(recovered/confirmed)*100; print("Recovered%:",recovered_p)
-    #new_row={'Country/Region':'---','Province/State':'--SUMMARY--','Confirmed':confirmed,'Recovered':recovered,'recoveredRate%':recovered_p}
-    #bottom_row=pd.DataFrame(data=None, columns=country_recovered.columns)
-    #country_recovered.append(bottom_row,ignore_index=True)
-    #
-    country_deaths.category=category
-    sums = country_recovered.select_dtypes(pd.np.number).sum().rename('total')
-    country_recovered.append(sums)
-    return(country_recovered)
-    
+
 def time_series(series_type):
+    series_type = series_type[0].lower() + series_type[1:]
     #series_type can be = Confirmed or Deaths or Recovered
     root = "COVID-19\\csse_covid_19_data\\"
-    timeSeries = "csse_covid_19_time_series\\time_series_19-covid-"  
-    series_name = (root+timeSeries+series_type+".csv")
+    #timeSeries = "csse_covid_19_time_series\\time_series_19-covid-"  # removed to reflect new data structures
+    #series_name = (root+timeSeries+series_type+".csv")               # removed to reflect new data structures
+    timeSeries = "csse_covid_19_time_series\\time_series_covid19_"  
+    series_name = (root+timeSeries+series_type+"_global.csv")
     
     series_frame = pd.read_csv(series_name)
     series_frame.category=series_type
@@ -120,8 +165,9 @@ def plot_country_totals(country_totals_range):
     plt.xticks(rotation=30)
     values=list(totals_transposed.values)
     
-    print(country_totals_range.category)
-    print("");print(country_totals_range);print("")
+    #category=country_totals_range.category
+    category= country_totals_range.category[0].upper() + country_totals_range.category[1:]
+    print(category);print(country_totals_range);print("")
     plt.plot(xticks,values)
     
     i = 0
@@ -131,33 +177,140 @@ def plot_country_totals(country_totals_range):
         #plt.annotate(values[i],xy=(xindex,yindex),textcoords="offset points",ha="left",va="top")
         plt.annotate(values[i],xy=(xindex,int(y)),xytext=(0,0),textcoords="offset points",ha="left",va="bottom")
         i=i+1
-    
     plt.ylabel(country_totals_range.category)
     plt.title(country_of_interest)
     plt.grid 
     plt.show()
-  
+    
+def growth_rate(country_totals_range):
+        country_of_interest=country_totals_range.index[0]
+        category=country_totals_range.category
+        
+        #Calculate Growth Rate Factors
+        growth_list=[]
+        growth_list_limit=country_totals_range.shape[1]-2
+        i=0; j=0; growth_difference=[]
+        for j in range(growth_list_limit):
+            n1 = round(country_totals_range.iloc[i,j+1]-country_totals_range.iloc[i,j],2)
+            growth_difference.append(n1)
+            n2 = round(country_totals_range.iloc[i,j+2]-country_totals_range.iloc[i,j+1],2)
+            if n2==0:
+                growth_list.append(1)
+            else:
+                growth_list.append(  round((n2/n1),2) )
+        growth_difference.append(n2)        
+        
+        #Display Growth Rate Factors
+        category=country_totals_range.category+"-Growth Rate Factors"     
+        print(country_of_interest);print(category);print(growth_list);print("")       
+        
+        #Setup to plot the Growth Rate Factor Line
+        #EXTRACT x AXIS LABLES FROM THE DATAFRAME THAT WAS PASSED
+        #   Flip the table
+        totals_transposed = country_totals_range.transpose()
+        #   Extract components  
+        xlabels=list(totals_transposed.index)
+        
+        #Annotate the plot line
+        i = 0; xlabels_adjusted=[]; xlabels_positions=[]
+        for i in range(growth_list_limit):
+            plt.annotate(growth_list[i],xy=(i,growth_list[i]),xytext=(0,0),textcoords="offset points",ha="left",va="bottom")
+            
+            #Create the Labels - postions adjusted due to nature of calculations
+            newlabel=xlabels[i+2]
+            xlabels_adjusted.append(newlabel)
+            newposition=xlabels_adjusted.index(xlabels_adjusted[i])
+            xlabels_positions.append(newposition)
+           
+            i=i+1
+        plt.xticks(xlabels_positions, xlabels_adjusted)
+        plt.xticks(rotation=40) 
+    
+        plt.title(country_of_interest)
+        plt.ylabel(category)   
+        plt.yscale("linear")
+        plt.plot(growth_list)
+        
+        
+        
+        #Linear Regression Line - compile the index array
+        x=[]
+        for i in range(growth_list_limit):
+            index_number=growth_list.index(growth_list[i])
+            x.append(index_number)
+        y=growth_list
+        
+        #Calculate and setup to plot the Regression Line
+        x=np.array(x)
+        y=np.array(y)
+        m,b =np.polyfit(x,y,1)
+        #plt.yscale("linear")
+        plt.plot(x, m*x+b)
+        
+        plt.grid 
+        plt.show()
+        
+        #Display Daily Growth Difference
+        print("");print(country_of_interest);print("Daily Growth Diffference")
+        print(growth_difference); print("")
+        
+        #Plot Daily Growth Difference ###################
+        #####Annotate the plot line
+        i = 0; gd_xlabels_adjusted=[]; gd_xlabels_positions=[]
+        for i in range(growth_list_limit):
+            plt.annotate(growth_difference[i],xy=(i,growth_difference[i]),xytext=(0,0),textcoords="offset points",ha="left",va="bottom")
+            
+            #Create the Labels - postions adjusted due to nature of calculations
+            newlabel = xlabels[i+1]  
+            gd_xlabels_adjusted.append(newlabel)
+            newposition=gd_xlabels_adjusted.index(gd_xlabels_adjusted[i])
+            gd_xlabels_positions.append(newposition)
+           
+            i=i+1    
+        plt.xticks(gd_xlabels_positions, gd_xlabels_adjusted)
+        plt.xticks(rotation=40)      
+        plt.title(country_of_interest)
+        plt.ylabel(country_totals_range.category+" - Daily Growth Difference")
+        plt.yscale("linear")
+        
+        #Linear Regression Line - compile the index array
+        growth_difference_limit=country_totals_range.shape[1]-1
+        x=[]
+        for i in range(growth_difference_limit):
+            index_number=growth_difference.index(growth_difference[i])
+            x.append(index_number)
+        y=growth_difference
+        
+        #Calculate and setup to plot the Regression Line
+        x=np.array(x)
+        y=np.array(y)
+        m,b =np.polyfit(x,y,1)
+        plt.yscale("linear")
+        plt.plot(x, m*x+b)
+        plt.plot(growth_difference)
+        plt.show()
+        
+        
+        
         
 if __name__ == "__main__":
-    day="03-17-2020"
+    day="03-26-2020"
     country="US"
     report=daily_report(day)    
     
-    #country_deaths=country_deathRate(report,country) 
+    country_deaths=country_deathRate(report,country) 
     #country_recovered=country_recoveredRate(report,country)
     #print (country_deaths)
     #print (country_recovered)
     
-    country="US"
-    print("");series_frame=time_series("Recovered")
+    print("");series_frame=time_series("Confirmed")
     country_series=country_time_series(series_frame,country)
     #print(country_series)
     
-    start_date="3/10/20"
-    end_date="3/20/20"
+    start_date="3/1/20"
+    end_date="3/28/20"
     country_totals_range=country_series_total(country_series,start_date,end_date)
     #print(country_totals_range)
-    plot_country_totals(country_totals_range)
+    #plot_country_totals(country_totals_range)
+    growth_rate(country_totals_range)
     
-    
-           
