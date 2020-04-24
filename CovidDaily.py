@@ -3,6 +3,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import locale
 
+
 class CovidDaily():
     def __init__(self, day):
         self.day=day
@@ -13,6 +14,7 @@ class CovidDaily():
         self.report['deathsRate%']=(self.report['Deaths']/self.report['Confirmed'])*100
         self.report['recoveredRate%']=(self.report['Recovered']/self.report['Confirmed'])*100
         self.country_pops=pd.read_csv("E:\\Programing\\covid\\CountryPops.csv")
+        #self.country_pops=pd.read_csv(fdesantis2855\\covid\\CountryPops.csv")
         self.worldPop=7773630000
         #pd.set_option('display.max_rows', 500)
         pd.set_option('display.max_columns', 10)
@@ -56,6 +58,7 @@ class CovidDaily():
         bottom_row.append(new_row, ignore_index=True)
        
         country_report.append(bottom_row)
+        country_report.country=country
         return(country_report)
     
     def state(self,country,state):
@@ -95,16 +98,19 @@ class CovidDaily():
         return(state_report)                   
 
     def country_world_ratio(self,report):
+        country=report.country
+        #test=report.iloc(report["Country_Region"]=report.country)
         #Test for new format the exception is the old format    
         try:
-            format_new=True; country_region="Country_Region"; province_state="Province_State"; test=report[country_region][0] 
+            format_new=True; country_region="Country_Region"; province_state="Province_State"; test=report[country_region]
         except:
             format_new=False; country_region="Country/Region"; province_state="Province/State"
         
         #Find the row of the country
         #
         cpopdf=pd.DataFrame(data=None, columns=self.country_pops.columns)
-        country=" "+report[country_region][0]; country=country.strip()
+    
+        print(self.country_pops)
         found=False
         for i in self.country_pops.index:
             if found: break
@@ -113,7 +119,9 @@ class CovidDaily():
                 row=self.country_pops.iloc[i,:]
                 cpopdf.loc[0,:]=row
                 found=True
-        pop=cpopdf["Population"][0]; pop=int(pop.replace(",",""))         
+              
+        pop=cpopdf["Population"][0]; 
+        pop=int(pop.replace(",",""))
         
         #Caculate totals
         worldPop=int(self.worldPop)
@@ -159,10 +167,10 @@ class CovidDaily():
     
     
 if __name__ == "__main__":
-        cvd=CovidDaily("04-05-2020")
+        cvd=CovidDaily("04-16-2020")
         #all=cvd.report_all()
         #print(all)
-        country_report=cvd.country("US")
+        country_report=cvd.country("Iran")
         #print(country_report)
         state_report=cvd.state("US", "New York")
         #print(state_report)
