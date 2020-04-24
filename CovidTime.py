@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pandasql import sqldf
+import os
 
 
 class CovidTime():
@@ -10,8 +11,10 @@ class CovidTime():
     def __init__(self, category):
         #One of Three categories = Confirmed, Deaths, Recovered 
         self.category = category[0].lower() + category[1:]
+        cwd=os.getcwd()
+        #print(cwd)
         #self.country_pops=pd.read_csv("E:\\Programing\\covid\\CountryPops.csv")
-        #self.country_pops=pd.read_csv(CountryPops.csv)
+        self.country_pops=pd.read_csv("CountryPops.csv")
         self.worldPop=7773630000
         self.root = "COVID-19\\csse_covid_19_data\\"
         #self.timeSeries = "csse_covid_19_time_series\\time_series_19-covid-"  # removed to reflect new data structures
@@ -477,4 +480,4 @@ if __name__ == "__main__":
     #deaths.plot_totals()
     #US_recovered_totals=recovered.totals(start,end)
     #recovered.plot_totals()
-    recovered.growth_rate()
+    #recovered.growth_rate()

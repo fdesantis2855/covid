@@ -4,6 +4,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def daily_report(day):
     
     root = "COVID-19\\csse_covid_19_data\\"
