@@ -460,7 +460,7 @@ class CovidTime():
             
 if __name__ == "__main__":      
    
-    start="2/1/20"; end="4/20/20"
+    start="3/1/20"; end="4/29/20"
     country="US"
     category1="Confirmed"
     category2="Deaths"
@@ -472,12 +472,12 @@ if __name__ == "__main__":
     
     #US_confirmed=confirmed.location(country)
     #US_deaths=deaths.location(country)
-    #US_recovered=recovered.location(country)
+    US_recovered=recovered.location(country)
     
     #US_confirmed_totals=confirmed.totals(start,end)
     #confirmed.plot_totals()
     #US_deaths_totals=deaths.totals(start,end)
     #deaths.plot_totals()
-    #US_recovered_totals=recovered.totals(start,end)
-    #recovered.plot_totals()
-    #recovered.growth_rate()
+    US_recovered_totals=recovered.totals(start,end)
+    recovered.plot_totals()
+    recovered.growth_rate()
