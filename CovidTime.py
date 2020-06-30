@@ -4,33 +4,36 @@ import numpy as np
 import pandas as pd
 from pandasql import sqldf
 import os
-
+import mpld3 as ld 
 
 class CovidTime():
     
     def __init__(self, category):
-        #One of Three categories = Confirmed, Deaths, Recovered 
+        #One of Three categories = Confirmed, Deaths, Recovered AND analytics
         self.category = category[0].lower() + category[1:]
         cwd=os.getcwd()
         #print(cwd)
-        #self.country_pops=pd.read_csv("E:\\Programing\\covid\\CountryPops.csv")
-        self.country_pops=pd.read_csv("CountryPops.csv")
+        try:
+            self.country_pops=pd.read_csv("CountryPops.csv")
+        except:
+            self.country_pops=pd.read_csv("E:\\Programing\\covid\\CountryPops.csv")
         self.worldPop=7773630000
-        self.root = "COVID-19\\csse_covid_19_data\\"
-        #self.timeSeries = "csse_covid_19_time_series\\time_series_19-covid-"  # removed to reflect new data structures
-        #self.series_name = (self.root+self.timeSeries+self.category+".csv")   # removed to reflect new data structures
-        self.timeSeries = "csse_covid_19_time_series\\time_series_covid19_" 
-        self.series_name = (self.root+self.timeSeries+self.category+"_global.csv")
-        self.series_frame =pd.read_csv(self.series_name)
-        #print(self.series_frame)
-        self.country_series=pd.DataFrame(data=None, columns=self.series_frame.columns)
-        self.country_totals=pd.DataFrame(data=None, columns=self.country_series.columns)
-        self.country='US'
-        self.country_totals_range=pd.DataFrame(data=None, columns=self.country_totals.columns)
-        pd.set_option('display.max_rows', 500)
-        pd.set_option('display.max_colwidth', 25)
-        pd.set_option('display.max_columns', 12)
-        pd.set_option('display.width', 200)
+        if category!="analytics":
+            self.root = "COVID-19\\csse_covid_19_data\\"
+            #self.timeSeries = "csse_covid_19_time_series\\time_series_19-covid-"  # removed to reflect new data structures
+            #self.series_name = (self.root+self.timeSeries+self.category+".csv")   # removed to reflect new data structures
+            self.timeSeries = "csse_covid_19_time_series\\time_series_covid19_" 
+            self.series_name = (self.root+self.timeSeries+self.category+"_global.csv")
+            self.series_frame =pd.read_csv(self.series_name)
+            #print(self.series_frame)
+            self.country_series=pd.DataFrame(data=None, columns=self.series_frame.columns)
+            self.country_totals=pd.DataFrame(data=None, columns=self.country_series.columns)
+            self.country='US'
+            self.country_totals_range=pd.DataFrame(data=None, columns=self.country_totals.columns)
+            pd.set_option('display.max_rows', 500)
+            pd.set_option('display.max_colwidth', 25)
+            pd.set_option('display.max_columns', 12)
+            pd.set_option('display.width', 200)
         
     def line_color(self):
         color={"confirmed":"blue", "deaths":"red", "recovered":"green"}
@@ -237,7 +240,7 @@ class CovidTime():
         color=self.line_color() 
         plt.plot( xticks,values,color=color )
         plt.xticks(rotation=30)
-        plt.tick_params(labelsize=9)
+        plt.tick_params(labelsize=7)
         plt.ylabel(self.category)
         plt.yscale("log")
         plt.title(country_of_interest,fontsize=20)
@@ -248,7 +251,7 @@ class CovidTime():
             value=values[i]; value=''.join(map(str,value)); value=int(value)
             value="{:,.0f}".format(value)
             text=plt.annotate(value,xy=(i,y),xytext=(-5,5),textcoords="offset points",ha="left",va="bottom",rotation=75)
-            text.set_fontsize(9)
+            text.set_fontsize(8)
             i=i+1 
         
         plt.grid(True, which='major',axis='x',color='y',linewidth=.25,animated=True)
@@ -309,8 +312,8 @@ class CovidTime():
             i=i+1
             
         plt.xticks(xlabels_positions, xlabels_adjusted)
-        plt.xticks(rotation=35)         
-        plt.tick_params(labelsize=8)
+        plt.xticks(rotation=35)      
+        plt.tick_params(labelsize=8, colors='orange')
         
         #  1st subplot - Linear Regression Line - compile the index array
         x=[]
@@ -323,6 +326,7 @@ class CovidTime():
         y=np.array(y)
         m,b =np.polyfit(x,y,1)
         plt.yscale("linear")
+        print("}",x,(m*x+b))
         plt.plot(x, m*x+b)
         ####### 1st suplot End ######
         
@@ -345,7 +349,7 @@ class CovidTime():
              
         plt.xticks(gd_xlabels_positions, gd_xlabels_adjusted)
         plt.xticks(rotation=35) 
-        plt.tick_params(labelsize=8)     
+        plt.tick_params(labelsize=8,  colors='brown')     
         #plt.title(country_of_interest)
         plt.ylabel(self.category+" - Growth Difference")
         plt.yscale("linear")
@@ -377,6 +381,8 @@ class CovidTime():
     
         return(self.country_pops)
     
+   
+    ## ANALYTICS METHODS - Requires a category of "analytics" to be passed on instantiation of an object
     
     def logistics_plot(self, country, start_date, end_date):    
        
@@ -386,10 +392,12 @@ class CovidTime():
         confirmed=CovidTime(category1)
         confirmed_country=confirmed.location(country)
         confirmed_time=confirmed.totals(start_date,end_date)
-
+      
+        
         deaths=CovidTime(category2)
         deaths_country=deaths.location(country)
         deaths_time=deaths.totals(start_date,end_date)
+      
         
         #logitics curve  1-new cases/pop
         #country=self.country_totals_range.index[0]
@@ -417,8 +425,9 @@ class CovidTime():
         i=0;  j=0; k=0; countlist=[]; growth_difference=[]; 
         for j in range(growth_list_limit):
             deaths_diff = deaths_time.iloc[i,j+1]-deaths_time.iloc[i,j]
-            confirmed_diff = confirmed_time.iloc[i,j+1]-deaths_time.iloc[i,j]
-            l=((1-(confirmed_diff/population)) * confirmed_time.iloc[i,j])
+            confirmed_diff = confirmed_time.iloc[i,j+1]-confirmed_time.iloc[i,j]
+            #l=((1-(deaths_diff/confirmed_diff)) * confirmed_time.iloc[i,j])
+            l=(((deaths_time.iloc[i,j]/confirmed_time.iloc[i,j])*100) )
             logistics[logistics.columns[j+1]]=l
          
         #Flip the Dataframe on its side
@@ -431,9 +440,9 @@ class CovidTime():
         fig.canvas.set_window_title(country+" Logistics Curve - "+start_date+" - "+end_date) 
         color=self.line_color() 
         plt.xticks(rotation=70)
-        plt.tick_params(labelsize=9)
+        plt.tick_params(labelsize=6)
         plt.ylabel("Deaths / Confirmed Ratio")
-        plt.yscale("log")
+        plt.yscale("linear")
         plt.title(country,fontsize=20)
         
         #  Annotate the plot with values 
@@ -450,16 +459,16 @@ class CovidTime():
         plt.show()
         
         
-        print(population) 
+        #print(population) 
        
         
             
             
             
             
-            
+"""           
 if __name__ == "__main__":      
-   
+  
     start="3/1/20"; end="4/29/20"
     country="US"
     category1="Confirmed"
@@ -481,3 +490,4 @@ if __name__ == "__main__":
     US_recovered_totals=recovered.totals(start,end)
     recovered.plot_totals()
     recovered.growth_rate()
+"""

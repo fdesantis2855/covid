@@ -41,8 +41,7 @@ class CovidDaily():
                 
         country_report=(cdf[[country_region, province_state,'Confirmed','Deaths','Recovered','deathsRate%','recoveredRate%']])
         country_report.sort_values([province_state],ascending=True)
-        #print("  cdf  ",cdf)
-        #print("Country Report ", country_report)
+       
         
         # Calculate Totals
         print("");print(country," TOTALS")
@@ -165,7 +164,7 @@ class CovidDaily():
         #
         return() 
     
-    
+"""    
 if __name__ == "__main__":
         cvd=CovidDaily("04-16-2020")
         #all=cvd.report_all()
@@ -176,6 +175,6 @@ if __name__ == "__main__":
         #print(state_report)
         country_ratio=cvd.country_world_ratio(country_report)
         print(country_ratio)
-    
+"""    
         
     
