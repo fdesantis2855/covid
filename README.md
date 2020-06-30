@@ -5,3 +5,6 @@ Data for this project is pulled via a git sub-module from the John Hopkins COVID
 ```
 git submodule update --remote
 ```
+
+## About
+An application that extracts the Covid 19 data from the Johns Hopkins Git Repository and creates plots for different countries as well as US national, state and county numbers. The information is updated every day by the command line user interface "covid_ask.py".
