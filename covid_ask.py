@@ -11,7 +11,7 @@ try:
 except:
     print("..")
 
-#variable initialization
+# variable initialization
 daily_instance=0; time_instance=0
 countrysave = "US"; categorysave = "Confirmed"
 startsave = "4/1/20"; endsave = "4/20/20"
@@ -30,11 +30,12 @@ while session == True:
     
     if branch=="q" or branch=="Q" or branch=="Quit": session = False; os.system("cls"); exit
     
+    
+    ## TIME RANGE -  CODE BRANCH
     if branch == "TR" or branch =="tr":
         os.system("color b")
         os.system("cls")
-        #print("");print("Loading Johns Hopkins Covid Time Series Information...");print("")
-        #os.system("cls")
+    
         if time_instance==0: 
             print("");print("Loading Johns Hopkins Covid Time Range Information...");print("")
             from CovidTime import CovidTime
@@ -52,14 +53,17 @@ while session == True:
         categorysave=category
         startsave=start_date
         endsave=end_date
-   
+
+        #  WORLD NUMBERS
         if country == "All" or country == "all" or country == "ALL":
             world = True
             obj.world(start_date, end_date)
    
+        #    COUNTRY NUMBERS - US CODE BRANCH
         elif country == "US":  # For "US" process for National or State or County numbers
             locale = input(f'NATIONAL numbers OR Specific STATE OR Specific COUNTY numbers ? - (N) or (S) or (C)  (Press Enter for {localesave} ) : ') or localesave    
             
+            #   US STATE NUMBERS
             if locale=="S" or locale=="s" or locale=="state" or locale=="State" or locale=="STATE":
                 state =      input (f'STATE of Interest   (Press Enter for {statesave} ): ') or statesave
                 
@@ -67,37 +71,43 @@ while session == True:
                 obj.us_state(state, start_date, end_date)
                 
                 statesave=state
-           
+            
+            #    US COUNTY NUMBERS
             elif locale=="C" or locale == "c" or locale=="county" or locale=="County" or locale=="COUNTY": 
                 state =      input (f'STATE of Interest     (Press Enter for {statesave}) : ') or statesave
                 county =     input (f'COUNTY of Interest   (Press Enter for  {countysave}): ') or countysave
 
+                
                 obj.us_county(county, state, start_date, end_date)
                 
                 statesave=state; countysave=county
         
+            #    US NATIONAL NUMBERS
             elif locale == "N" or locale=="n" or locale=="National" or country != "US":
                 location=obj.location("US")
                 totals = obj.totals(start_date,end_date)
                 try:
                     obj.plot_totals()
+                    # obj.growth_rate()
                 except:
                     print("Time window selected has no numbers for the country of interest. Try Again")
             
             localesave=locale
         
+        #    COUNTRY NUMBERS  -  OTHER THAN US CODE BRANCH
         elif country != "US":
             location=obj.location(country)
             totals = obj.totals(start_date,end_date)
             try:
                     obj.plot_totals()
+                    obj.growth_rate()
             except:
                     print("Time window selected has no numbers for the country of interest. Try Again")
         
         time_instance+=1    
     
     
-    
+    ## DAILY REPORT -  CODE BRANCH
     elif branch == "DR" or branch == "dr" or branch =="Dr":
         os.system("cls")
         os.system("color a")
